@@ -3,13 +3,23 @@ from rest_framework.response import Response
 from rest_framework import status
 from ...models import Books
 from ...serializers import BooksSerializer
+from rest_framework.authentication import get_authorization_header
+from ...authentication import decode_access_token
+from rest_framework.exceptions import AuthenticationFailed
 
-@api_view(['GET'])
+
+@api_view(['POST'])
 def get_books(request):
+
     try:
-        books = Books.objects.all()
-        serializer = BooksSerializer(books, many=True)
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        auth = get_authorization_header(request).split()
+
+        if auth and len(auth) == 2:
+            token = auth[1].decode('utf-8')
+            id = decode_access_token(token)
+            books = Books.objects.all()
+            serializer = BooksSerializer(books, many=True)
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
     except Exception as e:
         return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

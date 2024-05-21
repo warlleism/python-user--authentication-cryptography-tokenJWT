@@ -52,11 +52,7 @@ def login_user(request):
             refresh_token = create_refresh_token(serializer.data['id'])
             response = Response()
             response.set_cookie(key='refresh_tokenToken', value=refresh_token, httponly=True )
-            response.data ={
-                'token': acess_token,
-                "status": 200,
-                "message": "User authenticated."
-            }
+            response.data ={'token': acess_token}
             
             return response
         else:

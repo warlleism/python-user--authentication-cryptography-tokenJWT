@@ -3,13 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from ...models import Books
 from ...serializers import BooksSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils.decorators import decorator_from_middleware
-from ...middleware import TokenAuthenticationMiddleware
-
 
 @api_view(['GET'])
-@decorator_from_middleware(TokenAuthenticationMiddleware)
 def get_books(request):
     try:
         books = Books.objects.all()
@@ -21,7 +16,6 @@ def get_books(request):
 
 
 @api_view(['POST'])
-@decorator_from_middleware(TokenAuthenticationMiddleware)
 def create_books(request):
     try:
         book_data = {

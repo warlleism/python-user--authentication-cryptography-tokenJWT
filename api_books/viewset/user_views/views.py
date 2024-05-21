@@ -4,9 +4,9 @@ from rest_framework import status
 from ...models import User
 from ...serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils import timezone
-from datetime import timedelta
+from ...authentication import create_access_token, create_refresh_token
 import bcrypt
+
 
 @api_view(['POST'])
 def register_user(request):
@@ -33,6 +33,7 @@ def register_user(request):
     except:
         return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['POST'])
 def login_user(request):
     try:
@@ -45,21 +46,30 @@ def login_user(request):
         user = User.objects.get(user_email=user_email)
 
         if bcrypt.checkpw(user_password.encode('utf-8'), user.user_password.encode('utf-8')):
-            refresh = RefreshToken.for_user(user)
-            expiration_time = int((timezone.now() + timedelta(minutes=30)).timestamp())
-            access_token = refresh.access_token
-            access_token.set_exp(expiration_time) 
-            return Response({"status": 200, "token": str(access_token), "message": "User authenticated."}, status=status.HTTP_200_OK)
+            user = User.objects.get(user_email=user_email)
+            serializer = UserSerializer(user)
+            acess_token = create_access_token(serializer.data['id'])
+            refresh_token = create_refresh_token(serializer.data['id'])
+            response = Response()
+            response.set_cookie(key='refresh_tokenToken', value=refresh_token, httponly=True )
+            response.data ={
+                'token': acess_token,
+                "status": 200,
+                "message": "User authenticated."
+            }
+            
+            return response
         else:
             return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
         return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+
 @api_view(['DELETE'])
 def remove_user(request):
     try:
         id = request.data.get('id')
-        
+
         if not id:
             return Response({"error": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -73,5 +83,3 @@ def remove_user(request):
 
     except Exception as e:
         return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-       

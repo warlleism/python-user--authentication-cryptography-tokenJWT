@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .viewset.user_views import views
 from .viewset.books_views import books_views
 
@@ -9,4 +8,5 @@ urlpatterns = [
     path('remove_user', views.remove_user),
     path('all_books', books_views.get_books),
     path('create_book', books_views.create_books),
+    path('delete_book', books_views.delete_book),
 ]

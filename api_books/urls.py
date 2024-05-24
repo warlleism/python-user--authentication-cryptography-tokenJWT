@@ -1,12 +1,13 @@
 from django.urls import path
-from .viewset.user_views import views
-from .viewset.books_views import books_views
+from .viewset.user_views.views import API
+from .viewset.books_views.books_views import BooksAPI
+
 
 urlpatterns = [
-    path('register_user', views.register_user),
-    path('login_user', views.login_user),
-    path('remove_user', views.remove_user),
-    path('all_books', books_views.get_books),
-    path('create_book', books_views.create_books),
-    path('delete_book', books_views.delete_book),
+    path('register_user', API.register_user),
+    path('login_user', API.login_user),
+    path('remove_user', API.remove_user),
+    path('all_books', BooksAPI.get_books),
+    path('create_book', BooksAPI.create_books),
+    path('delete_book', BooksAPI.delete_book),
 ]

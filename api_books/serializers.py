@@ -5,7 +5,7 @@ from .models import User, Books
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'user_email', 'user_password']
+        fields = '__all__'
 
 
 class BooksSerializer(serializers.ModelSerializer):

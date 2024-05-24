@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api_books',
-    'rest_framework_swagger'
+    'drf_yasg'
 ]
 
 

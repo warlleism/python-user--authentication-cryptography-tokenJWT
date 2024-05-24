@@ -5,7 +5,6 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
 SECRET_KEY = 'django-insecure-5_(@8g9(ea^r_$h8q_jf*vx89t@xpwy=f0+cxec=)+e_9&v@j='
 
 DEBUG = True
@@ -26,6 +25,19 @@ INSTALLED_APPS = [
     'drf_yasg'
 ]
 
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        },
+    },
+    'USE_SESSION_AUTH': False,
+    'APIS_SORTER': 'alpha',
+    'SHOW_REQUEST_HEADERS': True,
+    'VALIDATOR_URL': None,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

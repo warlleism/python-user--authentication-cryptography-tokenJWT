@@ -7,25 +7,48 @@ from ...models import Books
 from ...serializers import BooksSerializer
 from rest_framework.authentication import get_authorization_header
 from ...authentication import decode_access_token
+import base64
+
 
 def authentication(request):
     auth = get_authorization_header(request).split()
-    
+
     if not auth or len(auth) != 2:
         return Response({"error": "Token não encontrado"}, status=status.HTTP_401_UNAUTHORIZED)
 
     token = auth[1].decode('utf-8')
     valid_token = decode_access_token(token)
-    
+
     if not valid_token:
         return Response({"error": "Token inválido"}, status=status.HTTP_401_UNAUTHORIZED)
-    
+
     return valid_token
 
+
+def encode64(image, name):
+    imagem_base64 = image
+    nome_imagem = name + '.jpg'
+    caminho_imagem = 'imagens/' + nome_imagem
+
+    with open(caminho_imagem, 'wb') as arquivo:
+        arquivo.write(base64.b64decode(imagem_base64))
+    return caminho_imagem
+
+def decode64(books):
+    updated_books = []
+    for book in books:
+         with open(book.book_image, "rb") as arquivo_imagem:
+             imagem_base64 = base64.b64encode(
+                 arquivo_imagem.read()).decode('utf-8')
+             book.book_image = imagem_base64
+             updated_books.append(book)
+    return updated_books
+
+
 class BooksAPI(generics.ListCreateAPIView):
-    
+
     serializer_class = BooksSerializer
-    
+
     @swagger_auto_schema(
         method='post',
         request_body=openapi.Schema(
@@ -36,6 +59,7 @@ class BooksAPI(generics.ListCreateAPIView):
                 'book_description': openapi.Schema(type=openapi.TYPE_STRING),
                 'book_release_year': openapi.Schema(type=openapi.TYPE_INTEGER),
                 'book_price': openapi.Schema(type=openapi.TYPE_NUMBER),
+                'book_image': openapi.Schema(type=openapi.TYPE_STRING),
             }
         ),
         responses={
@@ -55,12 +79,14 @@ class BooksAPI(generics.ListCreateAPIView):
             return auth_response
 
         try:
+
             book_data = {
                 "book_category": request.data.get('book_category'),
                 "book_name": request.data.get('book_name'),
                 "book_description": request.data.get('book_description'),
                 "book_release_year": request.data.get('book_release_year'),
-                "book_price": request.data.get('book_price')
+                "book_price": request.data.get('book_price'),
+                "book_image": encode64(request.data.get('book_image'), request.data.get('book_name'))
             }
 
             book = Books(**book_data)
@@ -89,8 +115,9 @@ class BooksAPI(generics.ListCreateAPIView):
 
         try:
             books = Books.objects.all()
-            serializer = BooksSerializer(books, many=True)
+            serializer = BooksSerializer(decode64(books), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -125,11 +152,15 @@ class BooksAPI(generics.ListCreateAPIView):
         try:
             book_id = request.data.get('id')
             book = Books.objects.get(id=book_id)
-            book.book_category = request.data.get('book_category', book.book_category)
+            book.book_category = request.data.get(
+                'book_category', book.book_category)
             book.book_name = request.data.get('book_name', book.book_name)
-            book.book_description = request.data.get('book_description', book.book_description)
-            book.book_release_year = request.data.get('book_release_year', book.book_release_year)
+            book.book_description = request.data.get(
+                'book_description', book.book_description)
+            book.book_release_year = request.data.get(
+                'book_release_year', book.book_release_year)
             book.book_price = request.data.get('book_price', book.book_price)
+            book.book_image = request.data.get('book_image', book.book_image)
 
             book.save()
             serializer = BooksSerializer(book)

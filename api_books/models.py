@@ -16,8 +16,9 @@ class Books(models.Model):
     book_category = models.CharField(max_length=250)
     book_name = models.CharField(max_length=250)
     book_description = models.TextField()
-    book_release_year = models.DateField()
+    book_release_year = models.IntegerField()
     book_price = models.DecimalField(max_digits=10, decimal_places=2)
+    book_image = models.TextField()
 
     def __str__(self):
         return f'Name : {self.book_name}'
